@@ -16,7 +16,9 @@
 # Load the package
 library(cervello)
 
-path <- 's:/cervello'
+clc <- function() cat(rep("\n", 50))
+
+clc() ## clear console when start
 
 # Optional: specify where the temporary files will be created:
 options(andromedaTempFolder = file.path(path, "andromedaTemp"))
@@ -26,23 +28,24 @@ maxCores <- parallel::detectCores()
 
 
 # Details for connecting to the server:
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "pdw",
-                                                                server = Sys.getenv("PDW_SERVER"),
-                                                                user = NULL,
-                                                                password = NULL,
-                                                                port = Sys.getenv("PDW_PORT"))
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "postgresql",
+                                                                connectionString = "", ##input string here
+                                                                pathToDriver = "C:/temp psql driver/")
 
 # For Oracle: define a schema that can be used to emulate temp tables:
+# No need to touch
 oracleTempSchema <- NULL
 
+
 # Details specific to the database:
-outputFolder <- "s:/cervello/mydb"
-cdmDatabaseSchema <- "CDM_mydb_V1247.dbo"
-cohortDatabaseSchema <- "mydb.dbo"
-cohortTable <- "cervello_mydatabase"
-databaseId <- "mydb"
-databaseName <- "MYDATABASE Medical Claims and Records Database"
-databaseDescription <- " MYDATABASE represent data from individuals enrolled in United States employer-sponsored insurance health plans. The data includes adjudicated health insurance claims (e.g. inpatient, outpatient, and outpatient pharmacy) as well as enrollment data from large employers and health plans who provide private healthcare coverage to employees, their spouses, and dependents." 
+outputFolder <- "c:/cervello/mydb"
+cdmDatabaseSchema <- "ohdsiv5_june2021_thin"
+vocabulary_database_schema <- "ohdsiv5_june2021_thin"
+cohortDatabaseSchema <- "ohdsi_cerevello_output"
+cohortTable <- "cervello_output"
+databaseId <- "999"
+databaseName <- "HKU_database"
+databaseDescription <- "what_description_i_need"
 
 # Use this to run the cohorttDiagnostics. The results will be stored in the diagnosticsExport subfolder of the outputFolder. This can be shared between sites.
 cervello::runCohortDiagnostics(connectionDetails = connectionDetails,
