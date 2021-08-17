@@ -59,10 +59,10 @@
                                              cdm_database_schema = cdmDatabaseSchema,
                                              vocabulary_database_schema = vocabularyDatabaseSchema,
                                              
-                                             results_database_schema.cohort_inclusion = "#cohort_inclusion",  
-                                             results_database_schema.cohort_inclusion_result = "#cohort_inc_result",  
-                                             results_database_schema.cohort_inclusion_stats = "#cohort_inc_stats",  
-                                             results_database_schema.cohort_summary_stats = "#cohort_summary_stats",  
+                                             results_database_schema.cohort_inclusion = cohortDatabaseSchema+".cohort_inclusion",  
+                                             results_database_schema.cohort_inclusion_result = cohortDatabaseSchema+".cohort_inc_result",  
+                                             results_database_schema.cohort_inclusion_stats = cohortDatabaseSchema+".cohort_inc_stats",  
+                                             results_database_schema.cohort_summary_stats = cohortDatabaseSchema+".cohort_summary_stats",  
                                                 
                                              target_database_schema = cohortDatabaseSchema,
                                              target_cohort_table = cohortTable,
@@ -85,8 +85,10 @@
   
   # Fetch inclusion rule stats and drop tables:
   fetchStats <- function(tableName) {
-    sql <- "SELECT * FROM #@table_name"
-    sql <- SqlRender::render(sql, table_name = tableName)
+    sql <- "SELECT * FROM @cohort_database_schema.@table_name"
+    sql <- SqlRender::render(sql, 
+                             table_name = tableName,
+                             cohort_database_schema = cohortDatabaseSchema)
     sql <- SqlRender::translate(sql = sql, 
                                 targetDialect = attr(connection, "dbms"),
                                 oracleTempSchema = oracleTempSchema)
@@ -95,12 +97,15 @@
     fileName <- file.path(outputFolder, paste0(SqlRender::snakeCaseToCamelCase(tableName), ".csv"))
     write.csv(stats, fileName, row.names = FALSE)
     
-    sql <- "TRUNCATE TABLE #@table_name; DROP TABLE #@table_name;"
-    sql <- SqlRender::render(sql, table_name = tableName)
-    sql <- SqlRender::translate(sql = sql, 
-                                targetDialect = attr(connection, "dbms"),
-                                oracleTempSchema = oracleTempSchema)
-    DatabaseConnector::executeSql(connection, sql)
+    #this R thing keeps running when there is a error and dropped all my tables.
+    #thank you.
+    
+    #sql <- "TRUNCATE TABLE #@table_name; DROP TABLE #@table_name;"
+    #sql <- SqlRender::render(sql, table_name = tableName)
+    #sql <- SqlRender::translate(sql = sql, 
+    #                            targetDialect = attr(connection, "dbms"),
+    #                            oracleTempSchema = oracleTempSchema)
+    #DatabaseConnector::executeSql(connection, sql)
   }
   fetchStats("cohort_inclusion")
   fetchStats("cohort_inc_result")
